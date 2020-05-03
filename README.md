@@ -1,2 +1,2 @@
 # Distributed Image Processing using GCP Dataproc
-Spinning Up Apache Spark clusters for Image Feature Detection
+Spinning up Apache Spark clusters for Image Feature Detection
