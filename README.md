@@ -1,6 +1,6 @@
 # Distributed Image Processing - GCP Dataproc
+## Spinning up Apache Spark clusters for Image Feature Detection
 ---
-Spinning up Apache Spark clusters for Image Feature Detection
 ## 1. Create VM Instance
 
 -Create a VM in Google Cloud Platform
