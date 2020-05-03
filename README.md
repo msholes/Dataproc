@@ -1,2 +1,285 @@
 # Distributed Image Processing using GCP Dataproc
 Spinning up Apache Spark clusters for Image Feature Detection
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Proj3.ipynb",
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "L_3RfptxeYZF",
+        "colab_type": "text"
+      },
+      "source": [
+        "# Distributed Image Processing - GCP Dataproc\n",
+        "\n",
+        "---\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "-7kzsCgHc0mB",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 1. Create VM Instance\n",
+        "\n",
+        "-Create a VM in Google Cloud Platform\n",
+        "\n",
+        "> Compute Engine -> VM Instances -> Create\n",
+        "\n",
+        "-Make sure it has at least 3 nodes (i.e. n1-standard-2 instance)\n",
+        "\n",
+        "> Debian GNU/Linux 9 Image\n",
+        "\n",
+        "-Allow full access to all Cloud APIs\n",
+        "\n",
+        "-SSH into Instance\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "3xqVwMdnaK8-",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 2. Install Scala and sbt\n",
+        "\n",
+        "```\n",
+        "sudo apt-get install -y dirmngr\n",
+        "```\n",
+        "```\n",
+        "sudo apt-get update\n",
+        "```\n",
+        "```\n",
+        "sudo apt-get install -y apt-transport-https\n",
+        "```\n",
+        "\n",
+        "```\n",
+        "echo \"deb https://dl.bintray.com/sbt/debian /\" | \\\n",
+        "sudo tee -a /etc/apt/sources.list.d/sbt.list\n",
+        "```\n",
+        "\n",
+        "```\n",
+        "sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823\n",
+        "\n",
+        "```\n",
+        "\n",
+        "\n",
+        "```\n",
+        "sudo apt-get install -y bc scala sbt\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "eAQCWeLIaqdh",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 3. Set up Feature Detection Files\n",
+        "\n",
+        "```\n",
+        "sudo apt-get update\n",
+        "```\n",
+        "\n",
+        "\n",
+        "```\n",
+        "git clone https://github.com/GoogleCloudPlatform/cloud-dataproc\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "```\n",
+        "cd cloud-dataproc/codelabs/opencv-haarcascade\n",
+        "```\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "1a0nwf7gciP2",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 4. Launch Build\n",
+        "\n",
+        "\n",
+        "```\n",
+        "sbt assembly\n",
+        "```\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "v649YbptfXTD",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 5. Create a Storage Bucket\n",
+        "\n",
+        "```\n",
+        "gsutil mb gs://${MYBUCKET}\n",
+        "```\n",
+        "### Download some images into bucket\n",
+        "\n",
+        "\n",
+        "```\n",
+        "curl https://www.publicdomainpictures.net/pictures/20000/velka/parents-holding-baby-871294937167Xx4.jpg | gsutil cp - gs://${MYBUCKET}/imgs/green-bananas.jpg\n",
+        "```\n",
+        "\n",
+        "```\n",
+        "curl https://www.publicdomainpictures.net/pictures/20000/velka/family-of-three-871290963799xUk.jpg | gsutil cp - gs://${MYBUCKET}/imgs/family-of-three.jpg\n",
+        "```\n",
+        "\n",
+        "```\n",
+        "curl https://www.publicdomainpictures.net/pictures/10000/velka/296-1246658839vCW7.jpg | gsutil cp - gs://${MYBUCKET}/imgs/classroom.jpg\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "1lzULM7Fivt_",
+        "colab_type": "text"
+      },
+      "source": [
+        "\n",
+        "###See Contents of Bucket\n",
+        "```\n",
+        "gsutil ls -R gs://${MYBUCKET}\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "HevB2vvzi92l",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 6. Create a Cloud Dataproc Cluster\n",
+        "\n",
+        "\n",
+        "```\n",
+        "MYCLUSTER=\"${USER/_/-}-qwiklab\"\n",
+        "```\n",
+        "\n",
+        "```\n",
+        "echo MYCLUSTER=${MYCLUSTER}\n",
+        "```\n",
+        "\n",
+        ">Set Global Region\n",
+        "\n",
+        "```\n",
+        "gcloud config set dataproc/region global\n",
+        "```\n",
+        "\n",
+        "\n",
+        "```\n",
+        "gcloud dataproc clusters create ${MYCLUSTER} --bucket=${MYBUCKET} --worker-machine-type=n1-standard-2 --master-machine-type=n1-standard-2   \n",
+        "```\n",
+        "\n",
+        ">If prompted use zone instead of region.\n",
+        "\n",
+        "\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "joNN7bvwkWsd",
+        "colab_type": "text"
+      },
+      "source": [
+        "## 7. Submit Job to Dataproc\n",
+        "\n",
+        ">Run in SSH to load face detection config file in your bucket\n",
+        "\n",
+        "\n",
+        "```\n",
+        "curl https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml | gsutil cp - gs://${MYBUCKET}/haarcascade_frontalface_default.xml\n",
+        "```\n",
+        "\n",
+        ">Submit job with your uploaded images\n",
+        "\n",
+        "\n",
+        "```\n",
+        "cd ~/cloud-dataproc/codelabs/opencv-haarcascade\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "```\n",
+        "gcloud dataproc jobs submit spark \\\n",
+        "--cluster ${MYCLUSTER} \\\n",
+        "--jar target/scala-2.10/feature_detector-assembly-1.0.jar -- \\\n",
+        "gs://${MYBUCKET}/haarcascade_frontalface_default.xml \\\n",
+        "gs://${MYBUCKET}/imgs/ \\\n",
+        "gs://${MYBUCKET}/out/\n",
+        "```\n",
+        "\n",
+        "### Monitor the Job in the Console\n",
+        "> Navigation menu -> Dataproc -> Jobs\n",
+        "\n",
+        "### When the job is complete goto Bucket and click on an image in the 'Out' directory\n",
+        "\n",
+        "> Navigation menu -> Storage\n",
+        "\n",
+        "\n",
+        "---\n",
+        "\n",
+        "\n",
+        "### For Better Results- Try out the Google Vision API\n",
+        "\n",
+        "---\n",
+        "\n",
+        "\n"
+      ]
+    }
+  ]
+}
